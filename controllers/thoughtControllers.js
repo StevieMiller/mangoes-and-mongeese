@@ -61,36 +61,25 @@ module.exports = {
   // Deletes an thought from the database. Looks for an app by ID.
   // Then if the app exists, we look for any users associated with the app based on he app ID and update the thoughts array for the User.
   deleteThought(req, res) {
-    Thought.findOneAndRemove({ _id: req.params.applicationId })
+    Thought.findOneAndRemove({ _id: req.params.thoughtId })
       .then((thought) =>
         !thought
           ? res.status(404).json({ message: "No thought with this id!" })
-          : User.findOneAndUpdate(
-              { thoughts: req.params.thoughtId },
-              { $pull: { thoughts: req.params.thoughtId } },
-              { new: true }
-            )
-      )
-      .then((user) =>
-        !user
-          ? res.status(404).json({
-              message: "Thought created but no user with this id!",
-            })
-          : res.json({ message: "Thought successfully deleted!" })
+          : res.json(thought)
       )
       .catch((err) => res.status(500).json(err));
   },
   // Adds a reaction to a thought. This method is unique in that we add the entire body of the reaction rather than the ID with the mongodb $addToSet operator.
   addReaction(req, res) {
-    Reaction.findOneAndUpdate(
-      { _id: req.params.reactionId },
+    Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
       { $addToSet: { tags: req.body } },
       { runValidators: true, new: true }
     )
-      .then((reaction) =>
-        !reaction
-          ? res.status(404).json({ message: "No reaction with this id!" })
-          : res.json(reaction)
+      .then((thought) =>
+        !thought
+          ? res.status(404).json({ message: "No thought with this id!" })
+          : res.json(thought)
       )
       .catch((err) => res.status(500).json(err));
   },
